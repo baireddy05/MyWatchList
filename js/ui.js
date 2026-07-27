@@ -170,6 +170,7 @@ export const ui = {
             </div>`;
         dom.detailModalOverlay.classList.add('show');
         document.body.classList.add('modal-open');
+        history.pushState({ modal: 'detail' }, '');
     },
 
     showConfirmModal(title, onConfirm) {
@@ -181,32 +182,37 @@ export const ui = {
         dom.confirmModalOverlay.classList.add('show');
         document.body.classList.add('modal-open');
         dom.confirmModalOverlay.querySelector('.confirm').onclick = () => { onConfirm(); this.hideConfirmModal(); };
+        history.pushState({ modal: 'confirm' }, '');
     },
 
-    hideConfirmModal() { 
+    hideConfirmModal(fromPopState = false) { 
         dom.confirmModalOverlay.classList.remove('show'); 
         if(!dom.detailModalOverlay.classList.contains('show') && !dom.authModalOverlay.classList.contains('show')) {
             document.body.classList.remove('modal-open');
         }
+        if (fromPopState !== true) history.back();
     },
     
-    hideDetailModal() {
+    hideDetailModal(fromPopState = false) {
         dom.detailModalOverlay.classList.remove('show');
         if(!dom.confirmModalOverlay.classList.contains('show') && !dom.authModalOverlay.classList.contains('show')) {
             document.body.classList.remove('modal-open');
         }
+        if (fromPopState !== true) history.back();
     },
     
     showAuthModal() {
         dom.authModalOverlay.classList.add('show');
         document.body.classList.add('modal-open');
+        history.pushState({ modal: 'auth' }, '');
     },
     
-    hideAuthModal() {
+    hideAuthModal(fromPopState = false) {
         dom.authModalOverlay.classList.remove('show');
         if(!dom.detailModalOverlay.classList.contains('show') && !dom.confirmModalOverlay.classList.contains('show')) {
             document.body.classList.remove('modal-open');
         }
+        if (fromPopState !== true) history.back();
     },
     
     updateAuthUI() {

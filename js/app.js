@@ -22,6 +22,17 @@ const app = {
     },
 
     bindEvents() {
+        // Handle Mobile Back Gesture (History API)
+        window.addEventListener('popstate', (e) => {
+            if (dom.detailModalOverlay.classList.contains('show')) {
+                ui.hideDetailModal(true);
+            } else if (dom.authModalOverlay.classList.contains('show')) {
+                ui.hideAuthModal(true);
+            } else if (dom.confirmModalOverlay.classList.contains('show')) {
+                ui.hideConfirmModal(true);
+            }
+        });
+
         // Theme Toggle
         dom.darkModeToggle?.addEventListener('click', () => {
             state.isDarkMode = !state.isDarkMode;
