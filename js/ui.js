@@ -59,23 +59,7 @@ export const ui = {
                     <i class="fa-solid fa-tv"></i>
                     <span>Series</span>
                 </button>
-                <button class="nav-item" id="navProfileBtn">
-                    <i class="fa-solid fa-user"></i>
-                    <span>Profile</span>
-                </button>
             `;
-            
-            // Re-attach profile click listener since we overwrote innerHTML
-            const profileBtn = document.getElementById('navProfileBtn');
-            if (profileBtn) {
-                profileBtn.addEventListener('click', () => {
-                     if (state.user) {
-                         fb.logout();
-                     } else {
-                         this.showAuthModal();
-                     }
-                });
-            }
         }
     },
 
