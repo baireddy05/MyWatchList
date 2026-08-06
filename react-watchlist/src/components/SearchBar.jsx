@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { tmdb, getPosterUrl, handleImageError } from '../services/tmdb';
+import { tmdb, getPosterUrl, handleImageError, getYear } from '../services/tmdb';
 
 const SearchBar = ({ onSelect }) => {
     const [query, setQuery] = useState('');
@@ -63,7 +63,7 @@ const SearchBar = ({ onSelect }) => {
                             <div className="item-info">
                                 <div className="title">{item.title || item.name}</div>
                                 <div className="year">
-                                    {item.release_date || item.first_air_date ? new Date(item.release_date || item.first_air_date).getFullYear() : 'N/A'}
+                                    {getYear(item) || 'N/A'}
                                 </div>
                             </div>
                         </li>

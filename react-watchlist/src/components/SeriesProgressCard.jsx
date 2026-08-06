@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { config, tmdb, getPosterUrl, handleImageError } from '../services/tmdb';
+import { config, tmdb, getPosterUrl, handleImageError, getYear } from '../services/tmdb';
 import { useWatchlist, calculateSeriesProgress } from '../contexts/WatchlistContext';
 import { Plus, Minus, Check, Trash2, Sliders, CheckCircle2 } from 'lucide-react';
 
@@ -109,7 +109,7 @@ const SeriesProgressCard = ({ item, onClick }) => {
                             {item.title}
                         </h3>
                         <div className="watching-meta">
-                            <span>{item.release_date ? new Date(item.release_date).getFullYear() : 'Series'}</span>
+                            <span>{getYear(item) || 'Series'}</span>
                             <span> • </span>
                             <span>{progress.totalSeasons} {progress.totalSeasons === 1 ? 'Season' : 'Seasons'}</span>
                             <span> • </span>

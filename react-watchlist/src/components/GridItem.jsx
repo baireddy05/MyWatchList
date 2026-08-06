@@ -1,5 +1,5 @@
 import React from 'react';
-import { getPosterUrl, handleImageError } from '../services/tmdb';
+import { getPosterUrl, handleImageError, getYear } from '../services/tmdb';
 import { useWatchlist, calculateSeriesProgress } from '../contexts/WatchlistContext';
 import { Eye, Trash2, CheckCircle2 } from 'lucide-react';
 
@@ -18,6 +18,7 @@ const GridItem = ({ item, type, onClick }) => {
 
     const isSeries = type === 'series';
     const progress = isSeries ? calculateSeriesProgress(item) : null;
+    const yearDisplay = getYear(item);
 
     return (
         <div className={`grid-item ${item.watched ? 'item-watched' : ''}`}>
@@ -43,8 +44,8 @@ const GridItem = ({ item, type, onClick }) => {
                 <div>
                     <div className="item-title" title={item.title}>{item.title}</div>
                     <div className="item-year">
-                        {item.release_date ? new Date(item.release_date).getFullYear() : 'N/A'}
-                        {isSeries && item.total_seasons && ` • ${item.total_seasons} ${item.total_seasons === 1 ? 'season' : 'seasons'}`}
+                        {yearDisplay ? yearDisplay : 'N/A'}
+                        {isSeries && item.total_seasons ? ` • ${item.total_seasons} ${item.total_seasons === 1 ? 'season' : 'seasons'}` : ''}
                     </div>
                 </div>
                 <div className="item-actions">

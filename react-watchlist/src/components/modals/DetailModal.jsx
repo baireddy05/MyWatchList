@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { config, getPosterUrl, handleImageError } from '../../services/tmdb';
+import { config, getPosterUrl, handleImageError, getYear } from '../../services/tmdb';
 import { useWatchlist, calculateSeriesProgress } from '../../contexts/WatchlistContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { Check, Plus, Minus, CheckCircle2, Tv, Trash2 } from 'lucide-react';
@@ -224,7 +224,7 @@ const DetailModal = ({ show, data, onClose }) => {
                     <div className="detail-info">
                         <h1>{data.title || data.name}</h1>
                         <div className="meta">
-                            <span>{new Date(data.release_date || data.first_air_date).getFullYear() || ''}</span>
+                            <span>{getYear(data)}</span>
                             {isMovie && data.runtime ? <span> &bull; {data.runtime} min</span> : null}
                             {!isMovie && (
                                 <span>

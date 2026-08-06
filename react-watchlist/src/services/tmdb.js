@@ -48,6 +48,37 @@ export const handleImageError = (e) => {
     }
 };
 
+export const getYear = (dateOrItem) => {
+    if (!dateOrItem) return '';
+    
+    // If passed a movie/series item object
+    if (typeof dateOrItem === 'object') {
+        const raw = dateOrItem.release_date || dateOrItem.first_air_date || dateOrItem.year || dateOrItem.releaseDate;
+        return getYear(raw);
+    }
+    
+    const str = String(dateOrItem).trim();
+    if (!str || str === 'null' || str === 'undefined' || str === 'N/A' || str === 'NaN') return '';
+
+    // If it's already a 4-digit number like "2024" or 2024
+    if (/^\d{4}$/.test(str)) {
+        return str;
+    }
+
+    // If it starts with YYYY (e.g., "2023-11-03" or "2023/05/10")
+    const match = str.match(/^(\d{4})/);
+    if (match) {
+        return match[1];
+    }
+
+    const parsed = new Date(str);
+    if (!isNaN(parsed.getTime())) {
+        return String(parsed.getFullYear());
+    }
+
+    return '';
+};
+
 const cache = new Map();
 
 export const tmdb = {

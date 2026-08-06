@@ -61,10 +61,14 @@ export const calculateSeriesProgress = (item) => {
 const normalizeItem = (item) => {
     if (!item) return item;
     const posterVal = item.poster_path || item.poster || null;
+    const yearVal = item.release_date || item.first_air_date || item.year || item.releaseDate || null;
     return {
         ...item,
         poster_path: posterVal,
-        poster: posterVal
+        poster: posterVal,
+        release_date: yearVal,
+        first_air_date: yearVal,
+        year: yearVal
     };
 };
 
@@ -123,10 +127,12 @@ export const WatchlistProvider = ({ children }) => {
     };
 
     const confirmDelete = async () => {
-        if (deleteModalState.item && deleteModalState.type) {
-            await removeFromWatchlist(deleteModalState.item.id, deleteModalState.type);
-        }
+        const toDelete = { ...deleteModalState };
+        // Immediately dismiss the modal with zero delay (Optimistic UI)
         setDeleteModalState({ show: false, item: null, type: null });
+        if (toDelete.item && toDelete.type) {
+            await removeFromWatchlist(toDelete.item.id, toDelete.type);
+        }
     };
 
     const addToWatchlist = async (item, type, initialStatus = 'plan_to_watch', customData = {}) => {
@@ -138,6 +144,7 @@ export const WatchlistProvider = ({ children }) => {
         let newItem;
         const isCompleted = initialStatus === 'completed' || initialStatus === 'watched';
         const posterVal = item.poster_path || item.poster || null;
+        const dateVal = item.release_date || item.first_air_date || item.year || null;
 
         if (type === 'movie') {
             newItem = {
@@ -145,7 +152,9 @@ export const WatchlistProvider = ({ children }) => {
                 title: item.title || item.name,
                 poster_path: posterVal,
                 poster: posterVal,
-                release_date: item.release_date || item.first_air_date,
+                release_date: dateVal,
+                first_air_date: dateVal,
+                year: dateVal,
                 watched: isCompleted
             };
         } else {
@@ -187,7 +196,9 @@ export const WatchlistProvider = ({ children }) => {
                 title: item.title || item.name,
                 poster_path: posterVal,
                 poster: posterVal,
-                release_date: item.release_date || item.first_air_date,
+                release_date: dateVal,
+                first_air_date: dateVal,
+                year: dateVal,
                 total_seasons: totalSeasons,
                 total_episodes: totalEpisodes,
                 seasons_detail: regularSeasons,
