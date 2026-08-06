@@ -71,6 +71,7 @@ const normalizeItem = (item) => {
 export const WatchlistProvider = ({ children }) => {
     const { user } = useAuth();
     const [watchlist, setWatchlist] = useState({ movies: [], series: [] });
+    const [deleteModalState, setDeleteModalState] = useState({ show: false, item: null, type: null });
 
     useEffect(() => {
         if (!user) {
@@ -106,6 +107,26 @@ export const WatchlistProvider = ({ children }) => {
             localStorage.setItem('offline_watchlist', JSON.stringify(updatedList));
             setWatchlist(updatedList);
         }
+    };
+
+    const requestDelete = (item, type) => {
+        if (!item) return;
+        setDeleteModalState({
+            show: true,
+            item,
+            type: type || (item.total_seasons !== undefined ? 'series' : 'movie')
+        });
+    };
+
+    const cancelDelete = () => {
+        setDeleteModalState({ show: false, item: null, type: null });
+    };
+
+    const confirmDelete = async () => {
+        if (deleteModalState.item && deleteModalState.type) {
+            await removeFromWatchlist(deleteModalState.item.id, deleteModalState.type);
+        }
+        setDeleteModalState({ show: false, item: null, type: null });
     };
 
     const addToWatchlist = async (item, type, initialStatus = 'plan_to_watch', customData = {}) => {
@@ -353,7 +374,11 @@ export const WatchlistProvider = ({ children }) => {
         toggleWatched,
         updateSeriesProgress,
         incrementEpisode,
-        decrementEpisode
+        decrementEpisode,
+        deleteModalState,
+        requestDelete,
+        cancelDelete,
+        confirmDelete
     };
 
     return (

@@ -4,11 +4,11 @@ import { useWatchlist, calculateSeriesProgress } from '../contexts/WatchlistCont
 import { Eye, Trash2, CheckCircle2 } from 'lucide-react';
 
 const GridItem = ({ item, type, onClick }) => {
-    const { removeFromWatchlist, toggleWatched } = useWatchlist();
+    const { requestDelete, toggleWatched } = useWatchlist();
 
     const handleRemove = (e) => {
         e.stopPropagation();
-        removeFromWatchlist(item.id, type);
+        requestDelete(item, type);
     };
 
     const handleToggleWatched = (e) => {

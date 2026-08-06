@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { config, getPosterUrl, handleImageError } from '../../services/tmdb';
 import { useWatchlist, calculateSeriesProgress } from '../../contexts/WatchlistContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { Check, Plus, Minus, CheckCircle2, Tv } from 'lucide-react';
+import { Check, Plus, Minus, CheckCircle2, Tv, Trash2 } from 'lucide-react';
 
 const DetailModal = ({ show, data, onClose }) => {
-    const { watchlist, addToWatchlist, updateSeriesProgress } = useWatchlist();
+    const { watchlist, addToWatchlist, updateSeriesProgress, requestDelete } = useWatchlist();
     const { user } = useAuth();
 
     const [selectedSeason, setSelectedSeason] = useState(1);
@@ -192,6 +192,13 @@ const DetailModal = ({ show, data, onClose }) => {
 
     const handleAlreadyWatched = () => {
         addToWatchlist(data, type, 'completed');
+    };
+
+    const handleRemoveFromWatchlist = () => {
+        if (watchlistItem) {
+            requestDelete(watchlistItem, type);
+            onClose();
+        }
     };
 
     // Determine active status pill
@@ -383,6 +390,14 @@ const DetailModal = ({ show, data, onClose }) => {
                                     <Check size={18} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '6px' }} />
                                     {watchlistItem.watched ? 'Marked as Watched' : 'In Watchlist'}
                                 </p>
+                                <button 
+                                    type="button" 
+                                    className="detail-remove-btn"
+                                    onClick={handleRemoveFromWatchlist}
+                                >
+                                    <Trash2 size={15} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '6px' }} />
+                                    Remove from Watchlist
+                                </button>
                             </div>
                         )}
                     </div>
@@ -393,4 +408,3 @@ const DetailModal = ({ show, data, onClose }) => {
 };
 
 export default DetailModal;
-

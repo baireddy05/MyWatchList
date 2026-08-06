@@ -4,7 +4,7 @@ import { useWatchlist, calculateSeriesProgress } from '../contexts/WatchlistCont
 import { Plus, Minus, Check, Trash2, Sliders, CheckCircle2 } from 'lucide-react';
 
 const SeriesProgressCard = ({ item, onClick }) => {
-    const { incrementEpisode, decrementEpisode, updateSeriesProgress, removeFromWatchlist } = useWatchlist();
+    const { incrementEpisode, decrementEpisode, updateSeriesProgress, requestDelete } = useWatchlist();
     const [isEditing, setIsEditing] = useState(false);
     const [selectedSeason, setSelectedSeason] = useState(item.currentSeason || 1);
     const [selectedEpisode, setSelectedEpisode] = useState(item.currentEpisode || 1);
@@ -84,7 +84,7 @@ const SeriesProgressCard = ({ item, onClick }) => {
 
     const handleRemove = (e) => {
         e.stopPropagation();
-        removeFromWatchlist(item.id, 'series');
+        requestDelete(item, 'series');
     };
 
     return (

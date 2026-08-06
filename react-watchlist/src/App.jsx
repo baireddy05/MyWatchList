@@ -6,6 +6,7 @@ import GridItem from './components/GridItem';
 import SeriesProgressCard from './components/SeriesProgressCard';
 import AuthModal from './components/modals/AuthModal';
 import DetailModal from './components/modals/DetailModal';
+import ConfirmModal from './components/modals/ConfirmModal';
 import { useAuth } from './contexts/AuthContext';
 import { useWatchlist } from './contexts/WatchlistContext';
 import { tmdb } from './services/tmdb';
@@ -13,7 +14,7 @@ import { PlayCircle, Clock, CheckCircle2, Film, Tv, Sparkles } from 'lucide-reac
 
 function App() {
     const { user } = useAuth();
-    const { watchlist } = useWatchlist();
+    const { watchlist, deleteModalState, cancelDelete, confirmDelete } = useWatchlist();
     const [activeTab, setActiveTab] = useState('movies');
     const [seriesFilter, setSeriesFilter] = useState('all'); // 'all' | 'watching' | 'plan' | 'completed'
     const [moviesFilter, setMoviesFilter] = useState('all'); // 'all' | 'unwatched' | 'watched'
@@ -321,6 +322,13 @@ function App() {
             
             <AuthModal show={showAuthModal} onClose={handleCloseAuth} />
             <DetailModal show={showDetailModal} data={detailData} onClose={handleCloseDetail} />
+            <ConfirmModal 
+                show={deleteModalState?.show}
+                item={deleteModalState?.item}
+                type={deleteModalState?.type}
+                onConfirm={confirmDelete}
+                onCancel={cancelDelete}
+            />
         </div>
     );
 }
