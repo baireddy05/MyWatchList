@@ -1,0 +1,10 @@
+{
+  "name": "movie-bucket",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "npm --prefix react-watchlist run dev",
+    "build": "npm --prefix react-watchlist run build",
+    "preview": "npm --prefix react-watchlist run preview"
+  }
+}
