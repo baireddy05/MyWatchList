@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Moon, LogIn, LogOut } from 'lucide-react';
+import logoSvg from '../assets/logo.svg';
+import logoPng from '../assets/logo.png';
 
 const Header = ({ setShowAuthModal, isDarkMode, setIsDarkMode }) => {
     const { user, logout } = useAuth();
@@ -15,7 +17,18 @@ const Header = ({ setShowAuthModal, isDarkMode, setIsDarkMode }) => {
 
     return (
         <header>
-            <h1>My Watchlist</h1>
+            <div className="brand-logo">
+                <img 
+                    src={logoSvg} 
+                    alt="My Watchlist Logo" 
+                    className="app-logo-img"
+                    onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = logoPng;
+                    }}
+                />
+                <h1>My Watchlist</h1>
+            </div>
             <div className="header-actions">
                 <button 
                     className="dark-mode-toggle" 
