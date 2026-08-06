@@ -113,7 +113,7 @@ const SeriesProgressCard = ({ item, onClick }) => {
                             <span> • </span>
                             <span>{progress.totalSeasons} {progress.totalSeasons === 1 ? 'Season' : 'Seasons'}</span>
                             <span> • </span>
-                            <span>{progress.totalCount} Episodes Total</span>
+                            <span>{progress.totalCount} Eps Total</span>
                         </div>
                     </div>
                     

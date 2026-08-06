@@ -1189,6 +1189,101 @@ body.dark-mode .close-detail-btn { background: rgba(255,255,255,0.1); }
     border: 1px solid rgba(16, 185, 129, 0.25);
 }
 
+/* Mobile & Small Screens Responsiveness Fixes */
+@media (max-width: 600px) {
+    /* Detail Modal Progress Tracker Fixes */
+    .modal-progress-section {
+        padding: 12px;
+        margin: 12px 0;
+    }
+    .modal-status-pills {
+        width: 100%;
+        justify-content: space-between;
+    }
+    .status-pill {
+        flex: 1;
+        text-align: center;
+        padding: 6px 4px;
+        font-size: 0.76rem;
+    }
+    .modal-selectors-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    .modal-selector-box {
+        width: 100%;
+    }
+    .modal-ep-stepper {
+        width: 100%;
+        gap: 6px;
+    }
+    .modal-stepper-btn {
+        width: 36px;
+        height: 36px;
+        flex-shrink: 0;
+    }
+    .inline-select {
+        flex: 1;
+        width: 100%;
+        min-width: 0;
+    }
+
+    /* Series Progress Card Fixes */
+    .watching-poster-wrapper {
+        width: 95px;
+        min-width: 95px;
+    }
+    .watching-details {
+        padding: 10px 10px;
+        gap: 6px;
+    }
+    .watching-title {
+        font-size: 0.96rem;
+    }
+    .watching-meta {
+        font-size: 0.72rem;
+        flex-wrap: wrap;
+    }
+    .watching-progress-badge-row {
+        gap: 4px;
+    }
+    .badge-highlight {
+        font-size: 0.84rem;
+    }
+    .badge-subtle {
+        font-size: 0.72rem;
+    }
+    .watching-stats {
+        font-size: 0.75rem;
+    }
+    .watching-actions-toolbar {
+        gap: 4px;
+    }
+    .episode-stepper {
+        padding: 2px 3px;
+        gap: 3px;
+        min-width: 0;
+    }
+    .stepper-btn {
+        width: 26px;
+        height: 26px;
+    }
+    .stepper-label {
+        font-size: 0.78rem;
+        padding: 0 4px;
+        min-width: 36px;
+    }
+    .stepper-btn.plus-btn-highlight {
+        padding: 0 6px;
+        font-size: 0.76rem;
+        height: 26px;
+    }
+    .action-icon-btn {
+        width: 28px;
+        height: 28px;
+    }
+}
+
 /* Desktop Styles (min-width: 1024px) */
 @media (min-width: 1024px) {
     body { padding-bottom: 0; }
