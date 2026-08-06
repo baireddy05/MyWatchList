@@ -784,9 +784,11 @@ body.dark-mode .close-detail-btn { background: rgba(255,255,255,0.1); }
 .edit-controls-row {
     display: flex;
     gap: 8px;
+    width: 100%;
 }
 .edit-control-group {
     flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -803,8 +805,13 @@ body.dark-mode .close-detail-btn { background: rgba(255,255,255,0.1); }
     border: 1px solid var(--border-color);
     background: var(--card-bg);
     color: var(--text-color);
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     outline: none;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 .edit-select:focus {
     border-color: var(--accent-color);
@@ -1235,6 +1242,13 @@ body.dark-mode .close-detail-btn { background: rgba(255,255,255,0.1); }
     }
 
     /* Series Progress Card Fixes */
+    .watching-edit-panel {
+        padding: 8px;
+    }
+    .edit-controls-row {
+        flex-direction: column;
+        gap: 6px;
+    }
     .watching-poster-wrapper {
         width: 95px;
         min-width: 95px;

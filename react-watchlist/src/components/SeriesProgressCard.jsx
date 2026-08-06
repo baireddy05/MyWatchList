@@ -142,7 +142,7 @@ const SeriesProgressCard = ({ item, onClick }) => {
                                     {seasonsDetail.length > 0 ? (
                                         seasonsDetail.map(s => (
                                             <option key={s.season_number} value={s.season_number}>
-                                                {s.name || `Season ${s.season_number}`} ({s.episode_count} eps)
+                                                Season {s.season_number} ({s.episode_count} eps)
                                             </option>
                                         ))
                                     ) : (
@@ -160,9 +160,9 @@ const SeriesProgressCard = ({ item, onClick }) => {
                                     onChange={(e) => setSelectedEpisode(Number(e.target.value))}
                                     className="edit-select"
                                 >
-                                    <option value={0}>0 (Not started)</option>
+                                    <option value={0}>0 (None)</option>
                                     {Array.from({ length: selectedSeasonMaxEpisodes || 30 }, (_, i) => i + 1).map(ep => (
-                                        <option key={ep} value={ep}>Episode {ep}</option>
+                                        <option key={ep} value={ep}>Ep {ep}</option>
                                     ))}
                                 </select>
                             </div>
