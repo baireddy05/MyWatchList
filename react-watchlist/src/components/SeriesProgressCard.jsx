@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { config, tmdb } from '../services/tmdb';
+import { config, tmdb, getPosterUrl, handleImageError } from '../services/tmdb';
 import { useWatchlist, calculateSeriesProgress } from '../contexts/WatchlistContext';
 import { Plus, Minus, Check, Trash2, Sliders, CheckCircle2 } from 'lucide-react';
 
@@ -91,10 +91,11 @@ const SeriesProgressCard = ({ item, onClick }) => {
         <div className="watching-card">
             <div className="watching-poster-wrapper" onClick={() => onClick(item)}>
                 <img 
-                    src={item.poster_path ? `${config.tmdbImageBaseUrl}${item.poster_path}` : config.placeholder} 
-                    alt={item.title} 
+                    src={getPosterUrl(item)} 
+                    alt={item.title || ''} 
                     loading="lazy" 
                     className="watching-poster"
+                    onError={handleImageError}
                 />
                 <div className="watching-poster-overlay">
                     <span>View Info</span>

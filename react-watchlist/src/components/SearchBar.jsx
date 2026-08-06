@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { tmdb, config } from '../services/tmdb';
+import { tmdb, getPosterUrl, handleImageError } from '../services/tmdb';
 
 const SearchBar = ({ onSelect }) => {
     const [query, setQuery] = useState('');
@@ -23,8 +23,7 @@ const SearchBar = ({ onSelect }) => {
                 const data = await tmdb.search(query);
                 if (data && data.results) {
                     const validResults = data.results.filter(item => 
-                        (item.media_type === 'movie' || item.media_type === 'tv') && 
-                        item.poster_path
+                        item.media_type === 'movie' || item.media_type === 'tv'
                     ).slice(0, 8);
                     setResults(validResults);
                     setIsActive(true);
@@ -60,7 +59,7 @@ const SearchBar = ({ onSelect }) => {
                 <ul>
                     {results.map(item => (
                         <li key={item.id} onClick={() => handleSelect(item)}>
-                            <img src={`${config.tmdbImageBaseUrl}${item.poster_path}`} alt="" loading="lazy" />
+                            <img src={getPosterUrl(item)} alt="" loading="lazy" onError={handleImageError} />
                             <div className="item-info">
                                 <div className="title">{item.title || item.name}</div>
                                 <div className="year">

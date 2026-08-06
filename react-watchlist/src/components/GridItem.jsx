@@ -1,10 +1,10 @@
 import React from 'react';
-import { config } from '../services/tmdb';
+import { getPosterUrl, handleImageError } from '../services/tmdb';
 import { useWatchlist, calculateSeriesProgress } from '../contexts/WatchlistContext';
-import { Eye, Trash2, Play, CheckCircle2 } from 'lucide-react';
+import { Eye, Trash2, CheckCircle2 } from 'lucide-react';
 
 const GridItem = ({ item, type, onClick }) => {
-    const { removeFromWatchlist, toggleWatched, updateSeriesProgress } = useWatchlist();
+    const { removeFromWatchlist, toggleWatched } = useWatchlist();
 
     const handleRemove = (e) => {
         e.stopPropagation();
@@ -23,9 +23,10 @@ const GridItem = ({ item, type, onClick }) => {
         <div className={`grid-item ${item.watched ? 'item-watched' : ''}`}>
             <a className="poster-link" onClick={() => onClick(item)}>
                 <img 
-                    src={item.poster_path ? `${config.tmdbImageBaseUrl}${item.poster_path}` : config.placeholder} 
-                    alt={item.title} 
+                    src={getPosterUrl(item)} 
+                    alt={item.title || ''} 
                     loading="lazy" 
+                    onError={handleImageError}
                 />
                 {isSeries && item.watched && (
                     <div className="grid-item-badge completed-badge">

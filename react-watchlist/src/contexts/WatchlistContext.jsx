@@ -58,6 +58,16 @@ export const calculateSeriesProgress = (item) => {
     };
 };
 
+const normalizeItem = (item) => {
+    if (!item) return item;
+    const posterVal = item.poster_path || item.poster || null;
+    return {
+        ...item,
+        poster_path: posterVal,
+        poster: posterVal
+    };
+};
+
 export const WatchlistProvider = ({ children }) => {
     const { user } = useAuth();
     const [watchlist, setWatchlist] = useState({ movies: [], series: [] });
@@ -72,9 +82,11 @@ export const WatchlistProvider = ({ children }) => {
         const unsubscribe = onSnapshot(docRef, (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
+                const rawMovies = data.movies || [];
+                const rawSeries = data.series || [];
                 setWatchlist({
-                    movies: data.movies || [],
-                    series: data.series || []
+                    movies: rawMovies.map(normalizeItem),
+                    series: rawSeries.map(normalizeItem)
                 });
             } else {
                 setDoc(docRef, { movies: [], series: [] });
@@ -104,12 +116,14 @@ export const WatchlistProvider = ({ children }) => {
 
         let newItem;
         const isCompleted = initialStatus === 'completed' || initialStatus === 'watched';
+        const posterVal = item.poster_path || item.poster || null;
 
         if (type === 'movie') {
             newItem = {
                 id: item.id,
                 title: item.title || item.name,
-                poster_path: item.poster_path,
+                poster_path: posterVal,
+                poster: posterVal,
                 release_date: item.release_date || item.first_air_date,
                 watched: isCompleted
             };
@@ -150,7 +164,8 @@ export const WatchlistProvider = ({ children }) => {
             newItem = {
                 id: item.id,
                 title: item.title || item.name,
-                poster_path: item.poster_path,
+                poster_path: posterVal,
+                poster: posterVal,
                 release_date: item.release_date || item.first_air_date,
                 total_seasons: totalSeasons,
                 total_episodes: totalEpisodes,

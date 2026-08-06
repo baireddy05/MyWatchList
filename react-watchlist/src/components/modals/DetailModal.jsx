@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { config } from '../../services/tmdb';
+import { config, getPosterUrl, handleImageError } from '../../services/tmdb';
 import { useWatchlist, calculateSeriesProgress } from '../../contexts/WatchlistContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { Check, Plus, Minus, CheckCircle2, Tv } from 'lucide-react';
@@ -209,8 +209,9 @@ const DetailModal = ({ show, data, onClose }) => {
                 <div className="detail-content-wrapper">
                     <div className="detail-poster">
                         <img 
-                            src={data.poster_path ? `${config.tmdbImageBaseUrl}${data.poster_path}` : config.placeholder} 
-                            alt={data.title || data.name} 
+                            src={getPosterUrl(data)} 
+                            alt={data.title || data.name || ''} 
+                            onError={handleImageError}
                         />
                     </div>
                     <div className="detail-info">
@@ -348,9 +349,10 @@ const DetailModal = ({ show, data, onClose }) => {
                                 providers.flatrate.map(p => (
                                     <img 
                                         key={p.provider_id} 
-                                        src={`${config.tmdbImageBaseUrl}${p.logo_path}`} 
+                                        src={getPosterUrl(p.logo_path, 'original')} 
                                         title={p.provider_name}
                                         alt={p.provider_name}
+                                        onError={handleImageError}
                                     />
                                 ))
                             ) : (
