@@ -217,8 +217,8 @@ const SeriesProgressCard = ({ item, onClick }) => {
                                     onClick={handleQuickIncrement}
                                     title="Watch Next Episode"
                                 >
-                                    <Plus size={16} />
-                                    <span>Next Ep</span>
+                                    <Plus size={15} />
+                                    <span>Next</span>
                                 </button>
                             </div>
 

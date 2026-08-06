@@ -891,15 +891,22 @@ body.dark-mode .close-detail-btn { background: rgba(255,255,255,0.1); }
     align-items: center;
     justify-content: space-between;
     gap: 8px;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 }
 .episode-stepper {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
     background: var(--container-bg);
-    padding: 3px 4px;
+    padding: 2px 3px;
     border-radius: 8px;
     border: 1px solid var(--border-color);
+    overflow: hidden;
+    box-sizing: border-box;
+    max-width: 100%;
+    min-width: 0;
 }
 .stepper-btn {
     background: var(--card-bg);
@@ -913,6 +920,7 @@ body.dark-mode .close-detail-btn { background: rgba(255,255,255,0.1); }
     justify-content: center;
     cursor: pointer;
     transition: all 0.15s ease;
+    flex-shrink: 0;
 }
 .stepper-btn:hover:not(:disabled) {
     background: var(--accent-color);
@@ -925,27 +933,29 @@ body.dark-mode .close-detail-btn { background: rgba(255,255,255,0.1); }
     cursor: not-allowed;
 }
 .stepper-label {
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     font-weight: 700;
-    padding: 0 6px;
-    min-width: 45px;
+    padding: 0 4px;
+    min-width: 34px;
     text-align: center;
+    white-space: nowrap;
 }
 .stepper-btn.plus-btn-highlight {
     background: var(--accent-color);
     color: white;
-    border-color: var(--accent-color);
+    border: none;
     width: auto;
     height: 28px;
-    padding: 0 10px;
+    padding: 0 8px;
     gap: 4px;
     font-weight: 600;
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     white-space: nowrap;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    border-radius: 6px;
 }
 .stepper-btn.plus-btn-highlight:hover {
     background: #f40612;
@@ -956,6 +966,7 @@ body.dark-mode .close-detail-btn { background: rgba(255,255,255,0.1); }
     display: flex;
     align-items: center;
     gap: 4px;
+    flex-shrink: 0;
 }
 .action-icon-btn {
     background: transparent;
