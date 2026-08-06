@@ -96,7 +96,7 @@ export const WatchlistProvider = ({ children }) => {
         }
     };
 
-    const addToWatchlist = async (item, type, initialStatus = 'plan_to_watch') => {
+    const addToWatchlist = async (item, type, initialStatus = 'plan_to_watch', customData = {}) => {
         if (!user) return false;
         
         const listType = type === 'movie' ? 'movies' : 'series';
@@ -130,6 +130,23 @@ export const WatchlistProvider = ({ children }) => {
             const lastSeasonNum = lastSeason ? lastSeason.season_number : totalSeasons;
             const lastSeasonEpCount = lastSeason ? lastSeason.episode_count : 1;
 
+            const seasonToUse = isCompleted 
+                ? lastSeasonNum 
+                : (customData.currentSeason !== undefined ? customData.currentSeason : 1);
+
+            const episodeToUse = isCompleted 
+                ? lastSeasonEpCount 
+                : (customData.currentEpisode !== undefined ? customData.currentEpisode : (initialStatus === 'watching' ? 1 : 0));
+
+            let statusToUse = initialStatus;
+            if (isCompleted) {
+                statusToUse = 'completed';
+            } else if (episodeToUse > 0) {
+                statusToUse = 'watching';
+            } else {
+                statusToUse = 'plan_to_watch';
+            }
+
             newItem = {
                 id: item.id,
                 title: item.title || item.name,
@@ -138,9 +155,9 @@ export const WatchlistProvider = ({ children }) => {
                 total_seasons: totalSeasons,
                 total_episodes: totalEpisodes,
                 seasons_detail: regularSeasons,
-                currentSeason: isCompleted ? lastSeasonNum : 1,
-                currentEpisode: isCompleted ? lastSeasonEpCount : (initialStatus === 'watching' ? 1 : 0),
-                status: isCompleted ? 'completed' : initialStatus, // 'watching' | 'plan_to_watch' | 'completed'
+                currentSeason: seasonToUse,
+                currentEpisode: episodeToUse,
+                status: statusToUse, // 'watching' | 'plan_to_watch' | 'completed'
                 watched: isCompleted
             };
         }

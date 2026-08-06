@@ -249,7 +249,7 @@ function App() {
                                                 <div className="empty-watching-box">
                                                     <Sparkles size={28} className="empty-icon" />
                                                     <p>You're not currently tracking any series.</p>
-                                                    <span className="empty-hint">Click "Start Watching" on any series below to track your episode progress!</span>
+                                                    <span className="empty-hint">Open any series to update and track your episode progress!</span>
                                                 </div>
                                             ) : (
                                                 <div className="watching-cards-grid">

@@ -1,12 +1,33 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { config } from '../../services/tmdb';
 import { useWatchlist, calculateSeriesProgress } from '../../contexts/WatchlistContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { Check, Plus, Minus, CheckCircle2, Play, Tv } from 'lucide-react';
+import { Check, Plus, Minus, CheckCircle2, Tv } from 'lucide-react';
 
 const DetailModal = ({ show, data, onClose }) => {
-    const { watchlist, addToWatchlist, updateSeriesProgress, incrementEpisode, decrementEpisode } = useWatchlist();
+    const { watchlist, addToWatchlist, updateSeriesProgress } = useWatchlist();
     const { user } = useAuth();
+
+    const [selectedSeason, setSelectedSeason] = useState(1);
+    const [selectedEpisode, setSelectedEpisode] = useState(0);
+
+    const isMovie = Boolean(data?.title);
+    const type = isMovie ? 'movie' : 'series';
+    const listType = isMovie ? 'movies' : 'series';
+
+    const watchlistItem = user && data ? watchlist[listType]?.find(item => item.id === data.id) : null;
+    const isInWatchlist = Boolean(watchlistItem);
+
+    // Regular seasons for TV
+    const regularSeasons = (!isMovie && data?.seasons)
+        ? data.seasons.filter(s => s.season_number > 0).map(s => ({
+            season_number: s.season_number,
+            episode_count: s.episode_count || 0,
+            name: s.name || `Season ${s.season_number}`
+        }))
+        : [];
+    const totalSeasons = data?.number_of_seasons || regularSeasons.length || 1;
+    const totalEpisodes = data?.number_of_episodes || regularSeasons.reduce((acc, s) => acc + (s.episode_count || 0), 0) || 0;
 
     useEffect(() => {
         if (show) {
@@ -16,42 +37,34 @@ const DetailModal = ({ show, data, onClose }) => {
         }
     }, [show]);
 
+    // Sync season & episode state when data or watchlist changes
+    useEffect(() => {
+        if (!data || isMovie) return;
+        if (watchlistItem) {
+            setSelectedSeason(watchlistItem.currentSeason || 1);
+            setSelectedEpisode(watchlistItem.currentEpisode !== undefined ? watchlistItem.currentEpisode : 0);
+        } else {
+            setSelectedSeason(1);
+            setSelectedEpisode(0);
+        }
+    }, [data?.id, watchlistItem?.currentSeason, watchlistItem?.currentEpisode, isMovie]);
+
     if (!show || !data) return null;
 
-    const isMovie = Boolean(data.title);
-    const type = isMovie ? 'movie' : 'series';
     const providers = data['watch/providers']?.results[config.region] || data['watch/providers']?.results['US'];
     const imdbId = data.external_ids?.imdb_id;
-    
-    // Check if in watchlist
-    const listType = isMovie ? 'movies' : 'series';
-    const watchlistItem = user && watchlist[listType]?.find(item => item.id === data.id);
-    const isInWatchlist = Boolean(watchlistItem);
 
-    // Regular seasons for TV
-    const regularSeasons = !isMovie && data.seasons 
-        ? data.seasons.filter(s => s.season_number > 0)
-        : [];
-    const totalSeasons = data.number_of_seasons || regularSeasons.length || 1;
-    const totalEpisodes = data.number_of_episodes || regularSeasons.reduce((acc, s) => acc + (s.episode_count || 0), 0) || 0;
+    // Calculate live progress for series
+    const liveSeriesItem = {
+        total_seasons: totalSeasons,
+        total_episodes: totalEpisodes,
+        seasons_detail: regularSeasons,
+        currentSeason: selectedSeason,
+        currentEpisode: selectedEpisode
+    };
+    const progress = !isMovie ? calculateSeriesProgress(liveSeriesItem) : null;
 
-    // Series progress metrics if in watchlist
-    const seriesProgressItem = watchlistItem ? {
-        ...watchlistItem,
-        total_seasons: watchlistItem.total_seasons || totalSeasons,
-        total_episodes: watchlistItem.total_episodes || totalEpisodes,
-        seasons_detail: watchlistItem.seasons_detail?.length ? watchlistItem.seasons_detail : regularSeasons.map(s => ({
-            season_number: s.season_number,
-            episode_count: s.episode_count || 0,
-            name: s.name || `Season ${s.season_number}`
-        }))
-    } : null;
-
-    const progress = seriesProgressItem ? calculateSeriesProgress(seriesProgressItem) : null;
-    const currentSeasonNum = seriesProgressItem?.currentSeason || 1;
-    const currentEpisodeNum = seriesProgressItem?.currentEpisode || 0;
-
-    const curSeasonObj = regularSeasons.find(s => s.season_number === currentSeasonNum);
+    const curSeasonObj = regularSeasons.find(s => s.season_number === selectedSeason);
     const curSeasonMaxEp = curSeasonObj?.episode_count || (regularSeasons.length > 0 ? 0 : Math.ceil(totalEpisodes / totalSeasons));
 
     const handleBackdropClick = (e) => {
@@ -61,50 +74,136 @@ const DetailModal = ({ show, data, onClose }) => {
     };
 
     const handleSeasonChange = (newSeason) => {
-        const seasonNum = Number(newSeason);
-        updateSeriesProgress(data.id, {
-            currentSeason: seasonNum,
-            currentEpisode: 1,
-            status: 'watching',
-            watched: false
-        });
-    };
+        const sNum = Number(newSeason);
+        setSelectedSeason(sNum);
+        const targetSeasonObj = regularSeasons.find(s => s.season_number === sNum);
+        const maxEpInSeason = targetSeasonObj?.episode_count || 30;
+        const newEp = selectedEpisode > maxEpInSeason ? maxEpInSeason : selectedEpisode;
+        setSelectedEpisode(newEp);
 
-    const handleEpisodeChange = (newEp) => {
-        const epNum = Number(newEp);
-        updateSeriesProgress(data.id, {
-            currentSeason: currentSeasonNum,
-            currentEpisode: epNum,
-            status: epNum > 0 ? 'watching' : 'plan_to_watch',
-            watched: false
-        });
-    };
-
-    const handleStatusChange = (newStatus) => {
-        if (newStatus === 'completed') {
+        if (isInWatchlist) {
             updateSeriesProgress(data.id, {
-                status: 'completed',
-                watched: true,
-                currentEpisode: totalEpisodes
-            });
-        } else if (newStatus === 'watching') {
-            updateSeriesProgress(data.id, {
-                status: 'watching',
-                watched: false,
-                currentEpisode: currentEpisodeNum > 0 ? currentEpisodeNum : 1
-            });
-        } else {
-            // Plan to watch
-            updateSeriesProgress(data.id, {
-                status: 'plan_to_watch',
-                watched: false,
-                currentEpisode: 0
+                currentSeason: sNum,
+                currentEpisode: newEp,
+                status: newEp > 0 ? 'watching' : 'plan_to_watch',
+                watched: false
             });
         }
     };
 
+    const handleEpisodeChange = (newEp) => {
+        const epNum = Number(newEp);
+        setSelectedEpisode(epNum);
+
+        if (isInWatchlist) {
+            const lastSeason = regularSeasons.length > 0 ? regularSeasons[regularSeasons.length - 1] : null;
+            const lastSeasonNum = lastSeason ? lastSeason.season_number : totalSeasons;
+            const isAllDone = selectedSeason === lastSeasonNum && epNum >= curSeasonMaxEp && curSeasonMaxEp > 0;
+
+            updateSeriesProgress(data.id, {
+                currentSeason: selectedSeason,
+                currentEpisode: epNum,
+                status: isAllDone ? 'completed' : (epNum > 0 ? 'watching' : 'plan_to_watch'),
+                watched: isAllDone
+            });
+        }
+    };
+
+    const handleStepMinus = () => {
+        if (selectedEpisode > 0) {
+            handleEpisodeChange(selectedEpisode - 1);
+        }
+    };
+
+    const handleStepPlus = () => {
+        if (selectedEpisode < curSeasonMaxEp) {
+            handleEpisodeChange(selectedEpisode + 1);
+        } else {
+            // Next season if available
+            const curIdx = regularSeasons.findIndex(s => s.season_number === selectedSeason);
+            if (curIdx >= 0 && curIdx < regularSeasons.length - 1) {
+                const nextSeason = regularSeasons[curIdx + 1];
+                setSelectedSeason(nextSeason.season_number);
+                setSelectedEpisode(1);
+                if (isInWatchlist) {
+                    updateSeriesProgress(data.id, {
+                        currentSeason: nextSeason.season_number,
+                        currentEpisode: 1,
+                        status: 'watching',
+                        watched: false
+                    });
+                }
+            }
+        }
+    };
+
+    const handleStatusPillClick = (newStatus) => {
+        const lastSeason = regularSeasons.length > 0 ? regularSeasons[regularSeasons.length - 1] : null;
+        const lastSeasonNum = lastSeason ? lastSeason.season_number : totalSeasons;
+        const lastSeasonEpCount = lastSeason ? lastSeason.episode_count : 1;
+
+        if (newStatus === 'completed') {
+            setSelectedSeason(lastSeasonNum);
+            setSelectedEpisode(lastSeasonEpCount);
+            if (isInWatchlist) {
+                updateSeriesProgress(data.id, {
+                    currentSeason: lastSeasonNum,
+                    currentEpisode: lastSeasonEpCount,
+                    status: 'completed',
+                    watched: true
+                });
+            }
+        } else if (newStatus === 'watching') {
+            const ep = selectedEpisode > 0 ? selectedEpisode : 1;
+            setSelectedEpisode(ep);
+            if (isInWatchlist) {
+                updateSeriesProgress(data.id, {
+                    currentSeason: selectedSeason,
+                    currentEpisode: ep,
+                    status: 'watching',
+                    watched: false
+                });
+            }
+        } else {
+            // plan_to_watch
+            setSelectedEpisode(0);
+            if (isInWatchlist) {
+                updateSeriesProgress(data.id, {
+                    currentSeason: selectedSeason,
+                    currentEpisode: 0,
+                    status: 'plan_to_watch',
+                    watched: false
+                });
+            }
+        }
+    };
+
+    const handleAddWithProgress = () => {
+        const lastSeason = regularSeasons.length > 0 ? regularSeasons[regularSeasons.length - 1] : null;
+        const lastSeasonNum = lastSeason ? lastSeason.season_number : totalSeasons;
+        const isDone = selectedSeason === lastSeasonNum && selectedEpisode >= curSeasonMaxEp && curSeasonMaxEp > 0;
+        const status = isDone ? 'completed' : (selectedEpisode > 0 ? 'watching' : 'plan_to_watch');
+
+        addToWatchlist(data, type, status, {
+            currentSeason: selectedSeason,
+            currentEpisode: selectedEpisode
+        });
+    };
+
+    const handleAlreadyWatched = () => {
+        addToWatchlist(data, type, 'completed');
+    };
+
+    // Determine active status pill
+    let currentActiveStatus = 'plan_to_watch';
+    if (watchlistItem?.watched || (progress && progress.percentage === 100)) {
+        currentActiveStatus = 'completed';
+    } else if (selectedEpisode > 0 || watchlistItem?.status === 'watching') {
+        currentActiveStatus = 'watching';
+    }
+
     return (
-        <div id="detailModalOverlay" className={`modal-overlay show`} onClick={handleBackdropClick}>
+        <div id="detailModalOverlay" className="modal-overlay show" onClick={handleBackdropClick}>
             <div className="modal-container">
                 <button className="close-detail-btn" onClick={onClose}>&times;</button>
                 <div className="detail-content-wrapper">
@@ -127,30 +226,30 @@ const DetailModal = ({ show, data, onClose }) => {
                             )}
                         </div>
 
-                        {/* Interactive Progress Card for Series in Watchlist */}
-                        {!isMovie && isInWatchlist && seriesProgressItem && (
+                        {/* Interactive Manual Progress Tracker for TV Series */}
+                        {!isMovie && (
                             <div className="modal-progress-section">
                                 <div className="modal-progress-header">
                                     <div className="modal-progress-title">
                                         <Tv size={18} />
-                                        <span>Your Watch Progress</span>
+                                        <span>Track Your Progress</span>
                                     </div>
                                     <div className="modal-status-pills">
                                         <button 
-                                            className={`status-pill ${seriesProgressItem.status === 'plan_to_watch' ? 'active' : ''}`}
-                                            onClick={() => handleStatusChange('plan_to_watch')}
+                                            className={`status-pill ${currentActiveStatus === 'plan_to_watch' ? 'active' : ''}`}
+                                            onClick={() => handleStatusPillClick('plan_to_watch')}
                                         >
                                             Plan to Watch
                                         </button>
                                         <button 
-                                            className={`status-pill ${seriesProgressItem.status === 'watching' ? 'active' : ''}`}
-                                            onClick={() => handleStatusChange('watching')}
+                                            className={`status-pill ${currentActiveStatus === 'watching' ? 'active' : ''}`}
+                                            onClick={() => handleStatusPillClick('watching')}
                                         >
                                             Watching
                                         </button>
                                         <button 
-                                            className={`status-pill ${seriesProgressItem.status === 'completed' ? 'active' : ''}`}
-                                            onClick={() => handleStatusChange('completed')}
+                                            className={`status-pill ${currentActiveStatus === 'completed' ? 'active' : ''}`}
+                                            onClick={() => handleStatusPillClick('completed')}
                                         >
                                             Completed
                                         </button>
@@ -162,7 +261,7 @@ const DetailModal = ({ show, data, onClose }) => {
                                         <div className="modal-selector-box">
                                             <label>Season</label>
                                             <select 
-                                                value={currentSeasonNum}
+                                                value={selectedSeason}
                                                 onChange={(e) => handleSeasonChange(e.target.value)}
                                                 className="modal-select"
                                             >
@@ -181,17 +280,18 @@ const DetailModal = ({ show, data, onClose }) => {
                                         </div>
 
                                         <div className="modal-selector-box">
-                                            <label>Episode</label>
+                                            <label>Watched Episode</label>
                                             <div className="modal-ep-stepper">
                                                 <button 
                                                     className="modal-stepper-btn minus"
-                                                    onClick={() => decrementEpisode(data.id)}
-                                                    disabled={currentEpisodeNum <= 0}
+                                                    onClick={handleStepMinus}
+                                                    disabled={selectedEpisode <= 0}
+                                                    title="Previous Episode"
                                                 >
                                                     <Minus size={14} />
                                                 </button>
                                                 <select 
-                                                    value={currentEpisodeNum}
+                                                    value={selectedEpisode}
                                                     onChange={(e) => handleEpisodeChange(e.target.value)}
                                                     className="modal-select inline-select"
                                                 >
@@ -202,7 +302,8 @@ const DetailModal = ({ show, data, onClose }) => {
                                                 </select>
                                                 <button 
                                                     className="modal-stepper-btn plus"
-                                                    onClick={() => incrementEpisode(data.id)}
+                                                    onClick={handleStepPlus}
+                                                    title="Next Episode"
                                                 >
                                                     <Plus size={14} />
                                                 </button>
@@ -210,18 +311,20 @@ const DetailModal = ({ show, data, onClose }) => {
                                         </div>
                                     </div>
 
-                                    <div className="modal-bar-container">
-                                        <div className="modal-bar-labels">
-                                            <span>Progress: <strong>{progress.watchedCount}</strong> / {progress.totalCount} episodes</span>
-                                            <span className="modal-bar-percent">{progress.percentage}%</span>
+                                    {progress && (
+                                        <div className="modal-bar-container">
+                                            <div className="modal-bar-labels">
+                                                <span>Progress: <strong>{progress.watchedCount}</strong> / {progress.totalCount} episodes</span>
+                                                <span className="modal-bar-percent">{progress.percentage}%</span>
+                                            </div>
+                                            <div className="watching-progress-bar-bg">
+                                                <div 
+                                                    className="watching-progress-bar-fill"
+                                                    style={{ width: `${progress.percentage}%` }}
+                                                />
+                                            </div>
                                         </div>
-                                        <div className="watching-progress-bar-bg">
-                                            <div 
-                                                className="watching-progress-bar-fill"
-                                                style={{ width: `${progress.percentage}%` }}
-                                            />
-                                        </div>
-                                    </div>
+                                    )}
                                 </div>
                             </div>
                         )}
@@ -261,21 +364,13 @@ const DetailModal = ({ show, data, onClose }) => {
                             <div className="detail-add-actions">
                                 <button 
                                     className="add-to-list-btn" 
-                                    onClick={() => addToWatchlist(data, type, 'plan_to_watch')}
+                                    onClick={handleAddWithProgress}
                                 >
                                     <Plus size={16} /> Add to Watchlist
                                 </button>
-                                {!isMovie && (
-                                    <button 
-                                        className="add-to-list-btn start-watching-now-btn" 
-                                        onClick={() => addToWatchlist(data, type, 'watching')}
-                                    >
-                                        <Play size={15} fill="currentColor" /> Start Watching
-                                    </button>
-                                )}
                                 <button 
                                     className="add-to-list-btn already-watched-btn" 
-                                    onClick={() => addToWatchlist(data, type, 'completed')}
+                                    onClick={handleAlreadyWatched}
                                 >
                                     <CheckCircle2 size={16} /> Already Watched
                                 </button>

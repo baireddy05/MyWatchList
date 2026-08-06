@@ -16,16 +16,6 @@ const GridItem = ({ item, type, onClick }) => {
         toggleWatched(item.id, type);
     };
 
-    const handleStartWatching = (e) => {
-        e.stopPropagation();
-        updateSeriesProgress(item.id, {
-            status: 'watching',
-            currentSeason: item.currentSeason || 1,
-            currentEpisode: (item.currentEpisode && item.currentEpisode > 0) ? item.currentEpisode : 1,
-            watched: false
-        });
-    };
-
     const isSeries = type === 'series';
     const progress = isSeries ? calculateSeriesProgress(item) : null;
 
@@ -57,15 +47,6 @@ const GridItem = ({ item, type, onClick }) => {
                     </div>
                 </div>
                 <div className="item-actions">
-                    {isSeries && !item.watched && item.status !== 'watching' && (
-                        <button 
-                            className="action-btn start-watching-btn"
-                            title="Start Watching"
-                            onClick={handleStartWatching}
-                        >
-                            <Play size={16} fill="currentColor" />
-                        </button>
-                    )}
                     <button 
                         className={`action-btn toggle-watched ${item.watched ? 'watched' : ''}`}
                         title={item.watched ? "Mark as unwatched" : "Mark as watched"}
