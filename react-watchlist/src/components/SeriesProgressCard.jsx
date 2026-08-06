@@ -213,12 +213,11 @@ const SeriesProgressCard = ({ item, onClick }) => {
                                     Ep {item.currentEpisode || 0}
                                 </span>
                                 <button 
-                                    className="stepper-btn plus-btn-highlight" 
+                                    className="stepper-btn plus" 
                                     onClick={handleQuickIncrement}
                                     title="Watch Next Episode"
                                 >
-                                    <Plus size={15} />
-                                    <span>Next</span>
+                                    <Plus size={16} />
                                 </button>
                             </div>
 
