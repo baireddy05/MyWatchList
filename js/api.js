@@ -32,5 +32,18 @@ export const api = {
             cache.set(cacheKey, data);
         }
         return data;
+    },
+
+    async getSeasonDetails(seriesId, seasonNumber) {
+        const cacheKey = `tv-${seriesId}-season-${seasonNumber}`;
+        if (cache.has(cacheKey)) {
+            return cache.get(cacheKey);
+        }
+
+        const data = await this.fetch(`/tv/${seriesId}/season/${seasonNumber}`);
+        if (data) {
+            cache.set(cacheKey, data);
+        }
+        return data;
     }
 };

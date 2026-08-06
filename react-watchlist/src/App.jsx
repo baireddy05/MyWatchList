@@ -3,16 +3,20 @@ import Header from './components/Header';
 import BottomNav from './components/BottomNav';
 import SearchBar from './components/SearchBar';
 import GridItem from './components/GridItem';
+import SeriesProgressCard from './components/SeriesProgressCard';
 import AuthModal from './components/modals/AuthModal';
 import DetailModal from './components/modals/DetailModal';
 import { useAuth } from './contexts/AuthContext';
 import { useWatchlist } from './contexts/WatchlistContext';
 import { tmdb } from './services/tmdb';
+import { PlayCircle, Clock, CheckCircle2, Film, Tv, Sparkles } from 'lucide-react';
 
 function App() {
     const { user } = useAuth();
     const { watchlist } = useWatchlist();
     const [activeTab, setActiveTab] = useState('movies');
+    const [seriesFilter, setSeriesFilter] = useState('all'); // 'all' | 'watching' | 'plan' | 'completed'
+    const [moviesFilter, setMoviesFilter] = useState('all'); // 'all' | 'unwatched' | 'watched'
     const [isDarkMode, setIsDarkMode] = useState(
         localStorage.getItem('isDarkMode') === 'true'
     );
@@ -46,7 +50,6 @@ function App() {
     };
 
     const handleGridItemClick = async (item) => {
-        // Find if it's a movie or tv series based on activeTab
         const type = activeTab === 'movies' ? 'movie' : 'series';
         const data = await tmdb.getDetails(item.id, type);
         setDetailData(data);
@@ -73,6 +76,23 @@ function App() {
         history.pushState({ modal: 'auth' }, '');
     };
 
+    // Series categorization
+    const watchingSeries = watchlist.series.filter(s => 
+        !s.watched && (s.status === 'watching' || (s.currentEpisode && s.currentEpisode > 0))
+    );
+    
+    const planToWatchSeries = watchlist.series.filter(s => 
+        !s.watched && s.status !== 'watching' && (!s.currentEpisode || s.currentEpisode === 0)
+    );
+
+    const completedSeries = watchlist.series.filter(s => 
+        s.watched === true || s.status === 'completed'
+    );
+
+    // Movies categorization
+    const unwatchedMovies = watchlist.movies.filter(m => !m.watched);
+    const watchedMovies = watchlist.movies.filter(m => m.watched);
+
     return (
         <div className="container">
             <Header 
@@ -88,13 +108,13 @@ function App() {
                     className={`tab-button ${activeTab === 'movies' ? 'active' : ''}`}
                     onClick={() => setActiveTab('movies')}
                 >
-                    Movies
+                    <Film size={18} style={{ marginRight: '6px', verticalAlign: 'text-bottom' }} /> Movies ({watchlist.movies.length})
                 </button>
                 <button 
                     className={`tab-button ${activeTab === 'series' ? 'active' : ''}`}
                     onClick={() => setActiveTab('series')}
                 >
-                    Series
+                    <Tv size={18} style={{ marginRight: '6px', verticalAlign: 'text-bottom' }} /> Series ({watchlist.series.length})
                 </button>
             </div>
 
@@ -108,34 +128,190 @@ function App() {
                     </div>
                 ) : (
                     <>
+                        {/* MOVIES TAB */}
                         <div className={`bucket-list ${activeTab === 'movies' ? 'active' : ''}`}>
-                            <div className="list-category">
-                                <h2>Your Movies</h2>
-                                {watchlist.movies.length === 0 ? (
-                                    <p className="empty-msg">No movies in your list yet. Start searching!</p>
-                                ) : (
-                                    <div className="item-grid">
-                                        {watchlist.movies.map(movie => (
-                                            <GridItem key={movie.id} item={movie} type="movie" onClick={handleGridItemClick} />
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
+                            {watchlist.movies.length > 0 && (
+                                <div className="sub-filters-container">
+                                    <button 
+                                        className={`sub-filter-pill ${moviesFilter === 'all' ? 'active' : ''}`}
+                                        onClick={() => setMoviesFilter('all')}
+                                    >
+                                        All ({watchlist.movies.length})
+                                    </button>
+                                    <button 
+                                        className={`sub-filter-pill ${moviesFilter === 'unwatched' ? 'active' : ''}`}
+                                        onClick={() => setMoviesFilter('unwatched')}
+                                    >
+                                        To Watch ({unwatchedMovies.length})
+                                    </button>
+                                    <button 
+                                        className={`sub-filter-pill ${moviesFilter === 'watched' ? 'active' : ''}`}
+                                        onClick={() => setMoviesFilter('watched')}
+                                    >
+                                        Watched ({watchedMovies.length})
+                                    </button>
+                                </div>
+                            )}
+
+                            {watchlist.movies.length === 0 ? (
+                                <div className="list-category">
+                                    <h2>Your Movies</h2>
+                                    <p className="empty-msg">No movies in your list yet. Start searching above!</p>
+                                </div>
+                            ) : (
+                                <>
+                                    {(moviesFilter === 'all' || moviesFilter === 'unwatched') && (
+                                        <div className="list-category">
+                                            <h2>To Watch ({unwatchedMovies.length})</h2>
+                                            {unwatchedMovies.length === 0 ? (
+                                                <p className="empty-msg">No unwatched movies.</p>
+                                            ) : (
+                                                <div className="item-grid">
+                                                    {unwatchedMovies.map(movie => (
+                                                        <GridItem key={movie.id} item={movie} type="movie" onClick={handleGridItemClick} />
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {(moviesFilter === 'all' || moviesFilter === 'watched') && (
+                                        <div className="list-category">
+                                            <h2>Watched Movies ({watchedMovies.length})</h2>
+                                            {watchedMovies.length === 0 ? (
+                                                <p className="empty-msg">No watched movies yet.</p>
+                                            ) : (
+                                                <div className="item-grid">
+                                                    {watchedMovies.map(movie => (
+                                                        <GridItem key={movie.id} item={movie} type="movie" onClick={handleGridItemClick} />
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </>
+                            )}
                         </div>
 
+                        {/* SERIES TAB */}
                         <div className={`bucket-list ${activeTab === 'series' ? 'active' : ''}`}>
-                            <div className="list-category">
-                                <h2>Your Series</h2>
-                                {watchlist.series.length === 0 ? (
-                                    <p className="empty-msg">No series in your list yet. Start searching!</p>
-                                ) : (
-                                    <div className="item-grid">
-                                        {watchlist.series.map(series => (
-                                            <GridItem key={series.id} item={series} type="series" onClick={handleGridItemClick} />
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
+                            {watchlist.series.length > 0 && (
+                                <div className="sub-filters-container">
+                                    <button 
+                                        className={`sub-filter-pill ${seriesFilter === 'all' ? 'active' : ''}`}
+                                        onClick={() => setSeriesFilter('all')}
+                                    >
+                                        All Series ({watchlist.series.length})
+                                    </button>
+                                    <button 
+                                        className={`sub-filter-pill highlight ${seriesFilter === 'watching' ? 'active' : ''}`}
+                                        onClick={() => setSeriesFilter('watching')}
+                                    >
+                                        <PlayCircle size={15} style={{ verticalAlign: 'text-bottom', marginRight: '4px' }} />
+                                        Currently Watching ({watchingSeries.length})
+                                    </button>
+                                    <button 
+                                        className={`sub-filter-pill ${seriesFilter === 'plan' ? 'active' : ''}`}
+                                        onClick={() => setSeriesFilter('plan')}
+                                    >
+                                        <Clock size={15} style={{ verticalAlign: 'text-bottom', marginRight: '4px' }} />
+                                        Plan to Watch ({planToWatchSeries.length})
+                                    </button>
+                                    <button 
+                                        className={`sub-filter-pill ${seriesFilter === 'completed' ? 'active' : ''}`}
+                                        onClick={() => setSeriesFilter('completed')}
+                                    >
+                                        <CheckCircle2 size={15} style={{ verticalAlign: 'text-bottom', marginRight: '4px' }} />
+                                        Completed ({completedSeries.length})
+                                    </button>
+                                </div>
+                            )}
+
+                            {watchlist.series.length === 0 ? (
+                                <div className="list-category">
+                                    <h2>Your Series</h2>
+                                    <p className="empty-msg">No series in your list yet. Start searching above!</p>
+                                </div>
+                            ) : (
+                                <>
+                                    {/* 1. CURRENTLY WATCHING SECTION */}
+                                    {(seriesFilter === 'all' || seriesFilter === 'watching') && (
+                                        <div className="list-category watching-category-section">
+                                            <div className="category-header-with-badge">
+                                                <div className="category-title-wrap">
+                                                    <PlayCircle className="category-icon play-icon-glow" size={24} />
+                                                    <h2>Currently Watching</h2>
+                                                </div>
+                                                <span className="count-badge glow">{watchingSeries.length} active</span>
+                                            </div>
+
+                                            {watchingSeries.length === 0 ? (
+                                                <div className="empty-watching-box">
+                                                    <Sparkles size={28} className="empty-icon" />
+                                                    <p>You're not currently tracking any series.</p>
+                                                    <span className="empty-hint">Click "Start Watching" on any series below to track your episode progress!</span>
+                                                </div>
+                                            ) : (
+                                                <div className="watching-cards-grid">
+                                                    {watchingSeries.map(series => (
+                                                        <SeriesProgressCard 
+                                                            key={series.id} 
+                                                            item={series} 
+                                                            onClick={handleGridItemClick} 
+                                                        />
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* 2. PLAN TO WATCH SECTION */}
+                                    {(seriesFilter === 'all' || seriesFilter === 'plan') && (
+                                        <div className="list-category">
+                                            <div className="category-header-with-badge">
+                                                <div className="category-title-wrap">
+                                                    <Clock className="category-icon" size={22} />
+                                                    <h2>Plan to Watch</h2>
+                                                </div>
+                                                <span className="count-badge">{planToWatchSeries.length}</span>
+                                            </div>
+
+                                            {planToWatchSeries.length === 0 ? (
+                                                <p className="empty-msg">No series in your plan-to-watch queue.</p>
+                                            ) : (
+                                                <div className="item-grid">
+                                                    {planToWatchSeries.map(series => (
+                                                        <GridItem key={series.id} item={series} type="series" onClick={handleGridItemClick} />
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* 3. COMPLETED SECTION */}
+                                    {(seriesFilter === 'all' || seriesFilter === 'completed') && (
+                                        <div className="list-category">
+                                            <div className="category-header-with-badge">
+                                                <div className="category-title-wrap">
+                                                    <CheckCircle2 className="category-icon completed-icon" size={22} />
+                                                    <h2>Completed Series</h2>
+                                                </div>
+                                                <span className="count-badge">{completedSeries.length}</span>
+                                            </div>
+
+                                            {completedSeries.length === 0 ? (
+                                                <p className="empty-msg">No completed series yet.</p>
+                                            ) : (
+                                                <div className="item-grid">
+                                                    {completedSeries.map(series => (
+                                                        <GridItem key={series.id} item={series} type="series" onClick={handleGridItemClick} />
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </>
+                            )}
                         </div>
                     </>
                 )}
@@ -150,3 +326,4 @@ function App() {
 }
 
 export default App;
+

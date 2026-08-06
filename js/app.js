@@ -117,13 +117,15 @@ const app = {
             if (e.target.matches('.modal-container') || e.target.closest('.close-detail-btn')) {
                 ui.hideDetailModal();
             }
-            if (e.target.matches('.add-to-list-btn')) {
+            const addBtn = e.target.closest('.add-to-list-btn');
+            if (addBtn) {
                 if(!state.user) {
                     ui.hideDetailModal();
                     ui.showAuthModal();
                     return;
                 }
-                this.addItem();
+                const action = addBtn.dataset.action || 'plan_to_watch';
+                this.addItem(action);
             }
         });
 
@@ -166,7 +168,7 @@ const app = {
         });
     },
 
-    addItem() {
+    addItem(action = 'plan_to_watch') {
         const item = state.currentDetailItem;
         if (!item || !state.user) return;
         
@@ -175,12 +177,14 @@ const app = {
         
         if (list.some(i => i.id === item.id)) return; // Already in list
         
+        const isCompleted = action === 'completed';
+
         list.push({ 
             id: item.id, 
             title: item.title || item.name, 
             year: (new Date(item.release_date || item.first_air_date)).getFullYear() || 'N/A', 
             poster: item.poster_path ? config.tmdbImageBaseUrl + item.poster_path : null, 
-            watched: false, 
+            watched: isCompleted, 
             type: type 
         });
         

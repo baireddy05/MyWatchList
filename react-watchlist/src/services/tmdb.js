@@ -38,5 +38,17 @@ export const tmdb = {
             cache.set(cacheKey, data);
         }
         return data;
+    },
+
+    async getSeasonDetails(tvId, seasonNumber) {
+        const cacheKey = `tv-${tvId}-season-${seasonNumber}`;
+        if (cache.has(cacheKey)) {
+            return cache.get(cacheKey);
+        }
+        const data = await this.fetch(`/tv/${tvId}/season/${seasonNumber}`);
+        if (data) {
+            cache.set(cacheKey, data);
+        }
+        return data;
     }
 };

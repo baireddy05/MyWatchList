@@ -165,7 +165,28 @@ export const ui = {
                         <h2>Where to Watch</h2>
                         <div class="providers-list">${providers?.flatrate?.map(p => `<img src="${config.tmdbImageBaseUrl}${p.logo_path}" title="${p.provider_name}">`).join('') || '<p class="subtle">Not available for streaming.</p>'}</div>
                     </div>
-                    ${!isInWatchlist ? `<div class="add-btn-container"><button class="add-to-list-btn">Add to Watchlist</button></div>` : '<div class="add-btn-container"><p class="success-text"><i class="fa-solid fa-check"></i> In Watchlist</p></div>'}
+                    ${!isInWatchlist ? `
+                        <div class="add-btn-container">
+                            <div class="detail-add-actions">
+                                <button class="add-to-list-btn" data-action="plan_to_watch">
+                                    <i class="fa-solid fa-plus"></i> Add to Watchlist
+                                </button>
+                                ${type === 'series' ? `
+                                    <button class="add-to-list-btn start-watching-now-btn" data-action="watching">
+                                        <i class="fa-solid fa-play"></i> Start Watching
+                                    </button>
+                                ` : ''}
+                                <button class="add-to-list-btn already-watched-btn" data-action="completed">
+                                    <i class="fa-solid fa-circle-check"></i> Already Watched
+                                </button>
+                            </div>
+                        </div>` : `
+                        <div class="add-btn-container">
+                            <div class="detail-in-watchlist-status">
+                                <p class="success-text"><i class="fa-solid fa-check"></i> In Watchlist</p>
+                            </div>
+                        </div>`
+                    }
                 </div>
             </div>`;
         dom.detailModalOverlay.classList.add('show');
